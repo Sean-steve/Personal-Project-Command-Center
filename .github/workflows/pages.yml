@@ -28,7 +28,7 @@ jobs:
       - name: Prepare static web bundle
         run: |
           mkdir -p public
-          cp index.html styles.css app.js data.js discovery.js v2.js public/
+          cp index.html styles.css app.js data.js discovery.js v2.js cloud.js cloud-ui.js public/
           touch public/.nojekyll
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
