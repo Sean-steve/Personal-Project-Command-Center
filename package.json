@@ -1,12 +1,12 @@
 {
   "name": "project-command-center",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Static local-first GitHub project portfolio manager",
   "scripts": {
     "test": "node --test",
-    "check": "node --check app.js && node --check data.js && node --test",
+    "check": "node --check app.js && node --check data.js && node --check discovery.js && node --check evidence.js && node --check v2.js && node --check cloud.js && node --check cloud-ui.js && node --test",
     "dev": "python3 -m http.server 8000"
   },
   "engines": {
