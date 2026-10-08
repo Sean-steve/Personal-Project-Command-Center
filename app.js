@@ -200,6 +200,7 @@ function render() {
   document.querySelectorAll('[data-view]').forEach(el=>{if(el.classList.contains('nav-item'))el.classList.toggle('active',el.dataset.view===state.view);});
   hydrateIcons();
   persist();
+  window.dispatchEvent(new CustomEvent('commandcenter:render'));
 }
 function hydrateIcons() {
   document.querySelectorAll('[data-icon]').forEach(n=>{n.innerHTML=i(n.dataset.icon);});
@@ -369,3 +370,25 @@ document.getElementById('mobile-shade').addEventListener('click',()=>{document.g
 hydrateIcons();render();
 syncGithub(true);
 setInterval(()=>syncGithub(true),60*60*1000);
+
+
+// Integration contract for the V2 private discovery UI. No sensitive data leaves the browser.
+window.CommandCenterBridge={
+ getProjects:()=>state.projects,
+ getCurrentView:()=>state.view,
+ render:()=>render(),
+ openProject:(id)=>{const p=getProject(id);if(p)drawer(p);},
+ createFromIdea:(topic,summary)=>{
+  const name=String(topic||'').trim().slice(0,100);
+  if(!name)throw Error('A project name is required');
+  const existing=state.projects.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(existing)return existing;
+  const p=normalize({name,description:String(summary||'').slice(0,1000),
+   source:'conversation',status:'Inbox',category:'SaaS / Product',
+   priority:'P3',stage:'Discovery',notes:'Discovered from imported conversation. Implementation has not been verified.'},true);
+  state.projects.push(p);render();return p;
+ },
+ navigate:goto,
+ export:()=>exportProjects(),
+ notify:toast
+};
