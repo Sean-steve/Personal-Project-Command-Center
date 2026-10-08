@@ -133,7 +133,7 @@ function requirements(chat){
  return result;
 }
 export function analyzeConversations(raw,projects,opts={}){
- const input=Array.isArray(raw)&&raw[0]?.messages?raw:extractChats(raw);
+ const input=Array.isArray(raw)&&raw.length&&typeof raw[0]?.sourceId==='string'&&Array.isArray(raw[0]?.messages)?raw:extractChats(raw);
  const groups=new Map();let considered=0;
  for(const chat of input){
   if(!relevant(chat)&&opts.projectOnly!==false)continue;
