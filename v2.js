@@ -37,6 +37,7 @@ function render(){
  navState();
 }
 function go(next){
+ window.dispatchEvent(new Event('commandcenter:v2-view'));
  view=next;preview=null;current=null;
  document.getElementById('sidebar').classList.remove('open');
  document.getElementById('mobile-shade').classList.remove('show');
@@ -200,6 +201,7 @@ document.addEventListener('submit',event=>{
 },true);
 document.addEventListener('keydown',event=>{if(event.key==='Escape')document.getElementById('overlay-root').innerHTML='';});
 window.addEventListener('commandcenter:render',()=>{if(view)render();});
+window.addEventListener('commandcenter:cloud-view',()=>{view=null;});
 // Reconcile matches when public repositories refresh, but keep user-linked decisions.
 window.setInterval(()=>{
  if(!view)return;
