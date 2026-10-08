@@ -1,4 +1,5 @@
 import {DISCOVERY_KEY,CHECKPOINT_KEY,readChatFile,analyzeConversations,mergeDiscoveries,reconcileIdea,evidenceState} from './discovery.js';
+import {findPublicEvidence} from './evidence.js';
 const bridge=window.CommandCenterBridge;
 const KEY='personal-command-center.v2.import-meta';
 const read=(key,fallback)=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):fallback;}catch(_){return fallback;}};
@@ -85,8 +86,8 @@ function details(id){
  current=x.id;const p=bridge.getProjects().find(q=>q.id===(x.manualProjectId||x.match?.projectId));
  const req=x.requirements||[];
  const opts='<option value="">No linked project</option>'+projectOptions(p?.id||'');
- const rows=req.length?req.map((r,k)=>'<div class="v2-requirement"><div><b>'+html(r.text)+'</b><small>'+html(r.verification==='verified'?'Manually verified using linked evidence':'Implementation unverified — needs code/test evidence')+'</small>'+(r.evidenceUrl?'<a href="'+html(r.evidenceUrl)+'" target="_blank" rel="noopener noreferrer">View evidence ↗</a>':'')+'</div><button class="btn" data-v2="verify" data-id="'+html(x.id)+'" data-req="'+k+'">'+(r.verification==='verified'?'Edit evidence':'Add evidence')+'</button></div>').join(''):'<p class="small-muted">No feature requests found. This conversation can still be registered as an idea.</p>';
- document.getElementById('overlay-root').innerHTML='<div class="overlay"><div class="drawer" role="dialog" aria-modal="true" aria-label="Conversation findings"><div class="drawer-head"><div><div class="eyebrow">CONVERSATION RECONCILIATION</div><h2>'+html(x.topic)+'</h2><p>'+x.conversationCount+' conversation(s) · Imported summary</p></div><button class="icon-btn" data-v2="close">✕</button></div><div class="drawer-content"><div class="info-card">'+html(evidenceState(x,p))+'</div><div class="field" style="margin-top:22px"><label for="v2-link">Match this idea to a project</label><select id="v2-link" data-id="'+html(x.id)+'">'+opts+'</select></div><h3 style="margin:27px 0 13px">Requested features</h3>'+rows+'<h3 style="margin-top:26px">Conversation references</h3><div class="v2-session-list">'+(x.conversations||[]).map(c=>'<div><b>'+html(c.title)+'</b><small>Chat reference '+html(c.id)+' · '+date(c.created&&c.created<1000000000000?c.created*1000:c.created)+'</small></div>').join('')+'</div><div class="thin-divider"></div><button class="btn" data-v2="dismiss" data-id="'+html(x.id)+'">Dismiss finding</button></div></div></div>';
+ const rows=req.length?req.map((r,k)=>'<div class="v2-requirement"><div><b>'+html(r.text)+'</b><small>'+html(r.verification==='verified'?'Manually verified using linked evidence':'Implementation unverified — needs code/test evidence')+'</small>'+(r.evidenceUrl?'<a href="'+html(r.evidenceUrl)+'" target="_blank" rel="noopener noreferrer">View evidence ↗</a>':'')+'</div><button class="btn" data-v2="verify" data-id="'+html(x.id)+'" data-req="'+k+'">'+(r.verification==='verified'?'Edit evidence':'Add evidence')+'</button> <button class="btn" data-v2="evidence-search" data-id="'+html(x.id)+'" data-req="'+k+'">Search GitHub</button></div>').join(''):'<p class="small-muted">No feature requests found. This conversation can still be registered as an idea.</p>';
+ document.getElementById('overlay-root').innerHTML='<div class="overlay"><div class="drawer" role="dialog" aria-modal="true" aria-label="Conversation findings"><div class="drawer-head"><div><div class="eyebrow">CONVERSATION RECONCILIATION</div><h2>'+html(x.topic)+'</h2><p>'+x.conversationCount+' conversation(s) · Imported summary</p></div><button class="icon-btn" data-v2="close">✕</button></div><div class="drawer-content"><div class="info-card">'+html(evidenceState(x,p))+'</div><div id="v2-evidence-results"></div><div class="field" style="margin-top:22px"><label for="v2-link">Match this idea to a project</label><select id="v2-link" data-id="'+html(x.id)+'">'+opts+'</select></div><h3 style="margin:27px 0 13px">Requested features</h3>'+rows+'<h3 style="margin-top:26px">Conversation references</h3><div class="v2-session-list">'+(x.conversations||[]).map(c=>'<div><b>'+html(c.title)+'</b><small>Chat reference '+html(c.id)+' · '+date(c.created&&c.created<1000000000000?c.created*1000:c.created)+'</small></div>').join('')+'</div><div class="thin-divider"></div><button class="btn" data-v2="dismiss" data-id="'+html(x.id)+'">Dismiss finding</button></div></div></div>';
 }
 function renderCheckpoints(){
  const items=checkpoints.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
@@ -150,6 +151,21 @@ document.addEventListener('click',event=>{
   saveIdeas(ideas);render();notify('Created '+project.name+' in Inbox.');
  }
  if(act==='dismiss'){const x=ideas.find(x=>x.id===id);if(x){x.status='dismissed';saveIdeas(ideas);document.getElementById('overlay-root').innerHTML='';render();}}
+ if(act==='evidence-search'){
+  const idea=ideas.find(x=>x.id===id),req=idea?.requirements?.[Number(btn.dataset.req)];
+  const p=bridge.getProjects().find(q=>q.id===(idea?.manualProjectId||idea?.match?.projectId));
+  if(!req||!p){notify('Link this idea to a public repository first.');return;}
+  const node=document.getElementById('v2-evidence-results');
+  if(node)node.textContent='Searching GitHub activity. This is not an implementation verification.';
+  findPublicEvidence(p,req.text).then(result=>{
+   const dest=document.getElementById('v2-evidence-results');if(!dest)return;
+   const candidates=result.candidates||[];
+   dest.innerHTML='<div class="info-card" style="margin-top:14px"><strong>Potential evidence, not proof</strong>'+
+    (candidates.length?candidates.map(c=>'<p style="margin:9px 0"><a href="'+html(c.url)+'" target="_blank" rel="noopener noreferrer">'+html(c.kind)+': '+html(c.title)+'</a> <small>('+c.score+'% text overlap)</small></p>').join(''):
+    '<p>No matching recent public activity. This does not prove absence of an implementation.</p>')+
+    (result.errors?.length?'<small>'+html(result.errors.join(' · '))+'</small>':'')+'</div>';
+  }).catch(error=>notify(error.message||'Public GitHub activity unavailable.'));
+ }
  if(act==='verify'){
   const idea=ideas.find(x=>x.id===id),req=idea?.requirements?.[Number(btn.dataset.req)];if(!req)return;
   const url=prompt('Paste a GitHub commit, PR, issue or file URL that supports this request. This is a manual verification; the app cannot prove the feature works.',req.evidenceUrl||'');
