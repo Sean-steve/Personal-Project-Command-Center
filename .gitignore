@@ -1,0 +1,10 @@
+# Never commit credentials, private portfolio exports, or user data
+.env
+.env.*
+!.env.example
+*.private.json
+*portfolio-backup*.json
+*command-center-backup*.json
+personal-projects.json
+node_modules/
+.DS_Store
