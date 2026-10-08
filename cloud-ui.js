@@ -14,7 +14,7 @@ function panel(){
  '<div class="main-grid"><section class="panel"><div class="panel-body"><div class="panel-title"><h3>Connection</h3><span class="tag '+(user?'live':'planned')+'">'+(user?'Signed in':isReady?'Configured':'Not configured')+'</span></div>'+
  '<form id="cloud-config-form"><div class="field"><label>Dedicated Supabase project URL</label><input name="url" type="url" placeholder="https://YOUR-REF.supabase.co" value="'+esc(c?.url||'')+'" required></div>'+
  '<div class="field"><label>Publishable key (NOT a secret key)</label><input name="publishableKey" type="password" autocomplete="off" placeholder="sb_publishable_..." value="'+esc(c?.publishableKey||'')+'" required></div>'+
- '<div class="flow" style="margin:18px 0">'+btn('Save connection','save-config',true)+'</div></form>'+
+ '<div class="flow" style="margin:18px 0">'+'<button class="btn btn-primary" type="submit">Save connection</button>'+'</div></form>'+
  '<p class="small-muted" style="line-height:1.8">Configure a separate database and run the included SQL migration. The publishable key can be used in a browser; secret or service-role keys are forbidden.</p>'+
  '<div class="thin-divider"></div><div class="panel-title"><h3>GitHub sign-in</h3><span class="small-muted">'+esc(user?.email||'Not signed in')+'</span></div>'+
  (user?btn('Sign out','logout'):isReady?btn('Sign in with GitHub','login',true):'<span class="small-muted">Save a valid connection first.</span>')+
@@ -82,6 +82,7 @@ async function run(action){
 }
 addNav();
 window.addEventListener('commandcenter:render',()=>{if(active)render();});
+window.addEventListener('commandcenter:v2-view',()=>{active=false;});
 document.addEventListener('click',event=>{
  const nav=event.target.closest('[data-cloud-nav]');
  if(nav){event.preventDefault();event.stopImmediatePropagation();open();return;}
