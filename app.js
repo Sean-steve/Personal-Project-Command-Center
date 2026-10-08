@@ -375,6 +375,18 @@ setInterval(()=>syncGithub(true),60*60*1000);
 // Integration contract for the V2 private discovery UI. No sensitive data leaves the browser.
 window.CommandCenterBridge={
  getProjects:()=>state.projects,
+ replaceProjects:(items)=>{
+  if(!Array.isArray(items)||items.length>5000)throw Error('Invalid portfolio backup.');
+  const used=new Set();
+  const normalized=[];
+  for(const item of items){
+   if(!item||typeof item!=='object')continue;
+   const p=normalize(item,true);
+   if(!used.has(p.id)){normalized.push(p);used.add(p.id);}
+  }
+  if(!normalized.length)throw Error('Cloud snapshot has no valid projects.');
+  state.projects=normalized;render();
+ },
  getCurrentView:()=>state.view,
  render:()=>render(),
  openProject:(id)=>{const p=getProject(id);if(p)drawer(p);},
