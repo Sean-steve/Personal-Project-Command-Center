@@ -45,3 +45,34 @@ The public app auto-discovers public repositories only. Private repositories can
 - CI and GitHub Pages workflows: committed.
 - Live GitHub Pages hosting: requires repository-level Pages activation if not already enabled.
 - [Implementation milestone and backlog](https://github.com/Sean-steve/Personal-Project-Command-Center/issues/1).
+
+
+
+## V2 — implemented modules (2026-10-08)
+
+The original dashboard remains available. V2 adds three workspaces:
+
+1. **Conversation discovery** — Import a ChatGPT conversations.json or export ZIP. The importer processes user messages locally, groups project topics, matches known repositories, flags topics with no repository match, and extracts conversation requirements with explicit unverified status. Review/approve summaries before saving. You can register unlinked ideas into the portfolio, manually link topics to projects, and record evidence links. The "Search GitHub" action suggests relevant public PRs/issues/commits, but **does not claim implementation**.
+2. **Development checkpoints** — Record completed work, current branch, blockers, next action, self-reported tests and supporting commit/PR URLs. Checkpoints remain local until you explicitly enable and use cloud backups.
+3. **Cloud workspace** — Optional dedicated Supabase GitHub OAuth authentication, owner-scoped RLS, revision-checked snapshot upload/download, and manual cross-device restore. See [Cloud setup](docs/CLOUD_SETUP.md).
+
+### How to find missing ChatGPT ideas
+
+Export ChatGPT data from Settings > Data Controls > Export Data, and import the ZIP or its conversations.json under **Conversation discovery**. Select **Save findings** after reviewing the topic summaries. Missing-repository findings can become Inbox projects in one click. The importer saves *only derived project summaries*, not raw transcripts, and never sends the conversation file to a server.
+
+### Current evidence limits
+
+Finding a matching repository/PR/commit does not prove feature implementation. The system keeps requests **unverified** until manually linked to supporting evidence. Full code/test verification needs a future authorized repository-analysis service. Automatic ongoing access to ChatGPT conversations is not available through the normal OpenAI API.
+
+### Activation and privacy
+
+- GitHub Pages publishes all static UI modules (index.html, app.js, data.js, discovery.js, evidence.js, v2.js, cloud.js, cloud-ui.js and styles.css).
+- Discovery, checkpoints, and portfolio edits are local-first and available without Supabase.
+- Cloud requires **your own new dedicated** Supabase database and GitHub OAuth provider configuration; the code/migration are committed but no live cloud deployment has been activated or tested.
+- Public GitHub repository auto-refresh and the separate private Sites workflow remain active paths. Private repository data is not exposed in this public repository.
+- JSON findings/checkpoint exports are PRIVATE documents; do not commit them to GitHub.
+- Run validation using npm run check. GitHub Actions workflow runs still need to be confirmed.
+
+### Unfinished V2 capabilities
+
+End-to-end deployed cloud sign-in, fully automatic private GitHub API access from the UI, GitHub Projects two-way synchronization, ChatGPT live history ingestion, automated source-code coverage audits, and local VS Code agent capture are not implemented yet. They are tracked separately; do not treat them as completed.
