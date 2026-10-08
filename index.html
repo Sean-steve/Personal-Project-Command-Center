@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8fc">
+  <meta name="description" content="Personal Project Command Center — a clear view of every project, priority and next action.">
+  <title>Project Command Center — Your work, in focus.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside id="sidebar" class="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div><strong>command<span>center</span></strong><small>PERSONAL WORKSPACE</small></div>
+      </div>
+      <div class="workspace-switch"><div class="workspace-avatar">S</div><div class="workspace-name"><strong>My workspace</strong><small>Sean-steve / GitHub</small></div><span class="chevron">⌄</span></div>
+      <p class="nav-caption">WORKSPACE</p>
+      <nav class="nav-main" id="primary-nav">
+        <button class="nav-item active" data-view="overview"><span data-icon="layout"></span>Overview</button>
+        <button class="nav-item" data-view="portfolio"><span data-icon="layers"></span>All projects <span id="nav-project-count" class="nav-count">—</span></button>
+        <button class="nav-item" data-view="board"><span data-icon="columns"></span>Kanban board</button>
+        <button class="nav-item" data-view="roadmap"><span data-icon="calendar"></span>Roadmap</button>
+        <button class="nav-item" data-view="insights"><span data-icon="chart"></span>Insights</button>
+      </nav>
+      <p class="nav-caption gap">MANAGEMENT</p>
+      <nav class="nav-main">
+        <button class="nav-item" data-view="automation"><span data-icon="repeat"></span>Automations <span class="nav-pip"></span></button>
+        <button class="nav-item" data-view="settings"><span data-icon="settings"></span>Settings</button>
+      </nav>
+      <div class="side-bottom">
+        <div class="focus-card">
+          <div class="focus-card-top"><span data-icon="zap"></span><span>FOCUS MODE</span></div>
+          <h4>Less juggling.<br>More building.</h4>
+          <p>Keep your active projects to three. Everything else can wait.</p>
+          <div class="focus-progress"><div id="focus-progress" style="width:0%"></div></div>
+          <small id="focus-count">0 / 3 active projects</small>
+        </div>
+        <a class="side-help" href="https://github.com/Sean-steve/Sites/issues/7" target="_blank" rel="noopener noreferrer"><span data-icon="help"></span>Private tracking hub <span data-icon="external"></span></a>
+        <div class="side-account"><div class="avatar">SN</div><div><strong>Your workspace</strong><small>Portfolio owner</small></div><span class="account-dot"></span></div>
+      </div>
+    </aside>
+    <div class="mobile-shade" id="mobile-shade"></div>
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left"><button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open navigation"><span data-icon="menu"></span></button><span class="muted">Workspace</span><span class="crumb-sep">/</span><strong id="current-page">Overview</strong></div>
+        <div class="topbar-right">
+          <label class="global-search"><span data-icon="search"></span><input id="global-search" type="search" placeholder="Search anything..." autocomplete="off" aria-label="Search projects"><kbd>⌘ K</kbd></label>
+          <button id="sync-btn" class="icon-btn sync-top" data-action="sync" title="Refresh public GitHub repositories" aria-label="Sync repositories"><span data-icon="refresh"></span></button>
+          <span class="topbar-divider"></span>
+          <button class="top-avatar" data-view="settings" title="Settings">SN</button>
+        </div>
+      </header>
+      <main id="content" class="content" tabindex="-1" aria-live="polite"></main>
+      <footer class="footbar"><span><span class="status-dot"></span><span id="footer-sync">Connecting to GitHub...</span></span><span>Built for focused makers <span class="heart">♥</span></span></footer>
+    </div>
+  </div>
+  <div id="overlay-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+  <input id="import-file" type="file" accept=".json,application/json" hidden>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
