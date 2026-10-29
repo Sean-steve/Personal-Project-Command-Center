@@ -15,9 +15,11 @@ test('initial seed includes the six planned public checkpoint projects', () => {
   global.localStorage={getItem:()=>null};
   try {
     const data=initialData();
-    assert.equal(data.projects.length,6);
+    assert.equal(data.projects.length,7);
     assert.equal(data.projects.filter(p=>p.status==='In Progress').length,3);
-    assert.equal(seed.length,6);
+    assert.equal(seed.length,7);
+    assert.equal(data.projects.find(p=>p.name==='Finance OS').status,'In Progress');
+    assert.equal(data.projects.find(p=>p.name==='SeanCore').status,'Planned');
   } finally {global.localStorage=original;}
 });
 
@@ -57,4 +59,21 @@ test('invalid imported statuses default to Inbox', () => {
   assert.equal(p.status,'Inbox');
   assert.equal(p.priority,'P3');
   assert.equal(p.health,'Unknown');
+});
+
+test('imports owner provided aliases and related repositories without resetting project status',()=>{
+ const first=normalize({id:11,full_name:'Sean-steve/Sage-Auto',name:'Sage Auto',status:'In Progress',next:'Keep'});
+ const body={projects:[{id:11,full_name:'Sean-steve/Sage-Auto',aliases:['Carhire Business','Sage Auto v2'],relatedRepositories:['Sean-steve/Sage-Auto-v2'],status:'Planned',next:'Do not override'}]};
+ const p=mergeImported([first],body).projects[0];
+ assert.equal(p.status,'In Progress');
+ assert.equal(p.next,'Keep');
+ assert.deepEqual(p.aliases,['Carhire Business','Sage Auto v2']);
+ assert.deepEqual(p.relatedRepositories,['Sean-steve/Sage-Auto-v2']);
+ assert.equal(mergeImported([p],body).projects[0].aliases.length,2);
+});
+test('rejects malformed related repository names when importing',()=>{
+ const n=normalize({name:'Unlinked',aliases:['A'.repeat(150),'Same','Same'],relatedRepositories:['nonsense','Sean-steve/valid']});
+ assert.equal(n.aliases.length,2);
+ assert.equal(n.aliases[0].length,100);
+ assert.deepEqual(n.relatedRepositories,['Sean-steve/valid']);
 });
