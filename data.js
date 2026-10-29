@@ -11,7 +11,8 @@ export const HEALTH = ['Unknown', 'On track', 'At risk', 'Blocked'];
 export const seed = [
   {id: 1402873453, full_name:'Sean-steve/Sage-Auto', name:'Sage Auto', category:'SaaS / Product', status:'In Progress', priority:'P1', stage:'Integration', health:'At risk', next:'Verify rental handover and return lifecycle', milestone:'Operational flows and owner settlements', tracker:'https://github.com/Sean-steve/Sage-Auto/issues/10'},
   {id: 1406023770, full_name:'Sean-steve/Deetoo-Rush', name:'Deetoo Rush', category:'SaaS / Product', status:'In Progress', priority:'P1', stage:'Integration', health:'At risk', next:'Stabilize PostgreSQL and local branch integration', milestone:'Multi-sided platform validation', tracker:'https://github.com/Sean-steve/Deetoo-Rush/issues/24'},
-  {id: 1405417819, full_name:'Sean-steve/seancore', name:'SeanCore', category:'Client Project', status:'In Progress', priority:'P2', stage:'Design', health:'On track', next:'Verify the published website and refine portfolio content', milestone:'Website release', tracker:'https://github.com/Sean-steve/seancore/issues/1'},
+  {id: 1422079516, full_name:'Sean-steve/Finance-Os', name:'Finance OS', category:'SaaS / Product', status:'In Progress', priority:'P2', stage:'Design', health:'At risk', next:'Reconcile all 60 screens against approved designs', milestone:'Exact screen-level prototype', tracker:'https://github.com/Sean-steve/Finance-Os'},
+  {id: 1405417819, full_name:'Sean-steve/seancore', name:'SeanCore', category:'Client Project', status:'Planned', priority:'P3', stage:'Design', health:'On track', next:'Verify the published website and refine portfolio content', milestone:'Website release', tracker:'https://github.com/Sean-steve/seancore/issues/1'},
   {id: 409879012, full_name:'Sean-steve/MentalHealth', name:'Mind OS', category:'SaaS / Product', status:'Planned', priority:'P2', stage:'Development', health:'At risk', next:'Reconcile Sprint 21 runtime and Sprint 22–23 work', milestone:'Baseline regression and integration', tracker:'https://github.com/Sean-steve/MentalHealth/issues/1'},
   {id: 1400809240, full_name:'Sean-steve/Pet-os', name:'Pet OS', category:'SaaS / Product', status:'Planned', priority:'P2', stage:'Development', health:'On track', next:'Prepare and scope Sprint 29', milestone:'Sprint 29', tracker:'https://github.com/Sean-steve/Pet-os/issues/6'},
   {id: 779199512, full_name:'Sean-steve/kids4future', name:'Kids4Future', category:'Foundation', status:'Planned', priority:'P3', stage:'Discovery', health:'Unknown', next:'Audit website and plan foundation content', milestone:'Website modernization', tracker:'https://github.com/Sean-steve/kids4future/issues/1'}
@@ -35,6 +36,15 @@ export function initialData() {
   if (saved && Array.isArray(saved.projects)) return saved;
   return {version:1, lastSync:null, projects:seed.map(p=>normalize({...p, private:false, source:'seed', repoUrl:'https://github.com/'+p.full_name}, true))};
 }
+function cleanAliases(raw) {
+  if (!Array.isArray(raw)) return [];
+  return [...new Set(raw.filter(x=>typeof x==='string').map(x=>cleanText(x,100)).filter(Boolean))].slice(0,25);
+}
+function cleanRelated(raw) {
+  if (!Array.isArray(raw)) return [];
+  return [...new Set(raw.filter(x=>typeof x==='string').map(x=>cleanText(x,180))
+    .filter(x=>/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(x)))].slice(0,25);
+}
 export function normalize(raw, trusted=false) {
   const fullname = cleanText(raw.full_name || '', 180);
   const id = String(raw.id == null ? ('local-' + Date.now() + '-' + Math.random().toString(36).slice(2,8)) : raw.id);
@@ -53,6 +63,8 @@ export function normalize(raw, trusted=false) {
     next:cleanText(raw.next, 320),
     milestone:cleanText(raw.milestone, 200),
     description:cleanText(raw.description, 1000),
+    aliases:cleanAliases(raw.aliases),
+    relatedRepositories:cleanRelated(raw.relatedRepositories),
     notes:cleanText(raw.notes, 5000),
     target: /^\d{4}-\d{2}-\d{2}$/.test(raw.target || '') ? raw.target : '',
     pushedAt:raw.pushedAt || null, createdAt:raw.createdAt || null,
@@ -132,6 +144,8 @@ export function mergeImported(projects, imported) {
       // Never reset fields already edited in the dashboard.
       if(raw.private) found.private=true;
       if(!found.repoUrl && name) found.repoUrl='https://github.com/'+name;
+      if(Array.isArray(raw.aliases)) found.aliases=cleanAliases([...(found.aliases||[]),...raw.aliases]);
+      if(Array.isArray(raw.relatedRepositories)) found.relatedRepositories=cleanRelated([...(found.relatedRepositories||[]),...raw.relatedRepositories]);
     } else {
       const record=normalize({
         ...raw,source: name?'import':'local',
