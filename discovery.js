@@ -108,12 +108,18 @@ function similarity(idea,project){
  if(key.length>=5&&matchTerm(queryTitle,key))score=97;
  if(full.length>=5&&matchTerm(queryTitle,full))score=Math.max(score,96);
  for(const term of (aliases[key]||aliases[full]||[]))if(matchTerm(queryTitle,term)||matchTerm(query,term))score=Math.max(score,91);
+ for(const term of (Array.isArray(project.aliases)?project.aliases:[]))if(matchTerm(queryTitle,term)||matchTerm(query,term))score=Math.max(score,95);
  const w=words(project.name);
  if(!score&&w.length>=2&&w.every(t=>words(queryTitle).includes(t)))score=80;
  return score;
 }
 export function reconcileIdea(idea,projects){
- const ranked=(projects||[]).map(p=>({id:String(p.id),name:p.name,score:similarity(idea,p)})).filter(x=>x.score>=80).sort((a,b)=>b.score-a.score);
+ // Canonical project can span several repositories; a design/legacy repo is not a second product.
+ const related=new Set((projects||[]).flatMap(p=>Array.isArray(p.relatedRepositories)?p.relatedRepositories:[])
+   .map(x=>String(x).toLowerCase()));
+ const ranked=(projects||[]).filter(p=>!related.has(String(p.full_name||'').toLowerCase()))
+   .map(p=>({id:String(p.id),name:p.name,score:similarity(idea,p)}))
+   .filter(x=>x.score>=80).sort((a,b)=>b.score-a.score);
  if(!ranked.length)return {status:'missing',projectId:null,projectName:null,confidence:0,evidence:'No strong portfolio/repository match. Local code may exist.'};
  if(ranked.length>1&&ranked[0].score-ranked[1].score<5)return {status:'review',projectId:null,projectName:null,confidence:ranked[0].score,evidence:'More than one potential project match.'};
  return {status:'linked',projectId:ranked[0].id,projectName:ranked[0].name,confidence:ranked[0].score,
