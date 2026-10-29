@@ -70,3 +70,13 @@ test('unsupported export rejected',()=>{
 test('ZIP or JSON file parser rejects irrelevant file type',async()=>{
  await assert.rejects(()=>readChatFile({name:'notes.txt',size:2,text:async()=>''}),/Choose conversations/);
 });
+
+test('imported crosswalk resolves V2 conversation to its canonical project',()=>{
+ const linked=reconcileIdea({topic:'Sage Auto v2 visual improvements',sample:''},[
+  {id:'1',name:'Sage Auto',full_name:'Sean-steve/Sage-Auto',aliases:['Sage Auto v2'],relatedRepositories:['Sean-steve/Sage-Auto-v2']},
+  {id:'2',name:'Sage-Auto-v2',full_name:'Sean-steve/Sage-Auto-v2'}
+ ]);
+ assert.equal(linked.status,'linked');
+ assert.equal(linked.projectId,'1');
+ assert.match(linked.evidence,/NOT verified/);
+});
